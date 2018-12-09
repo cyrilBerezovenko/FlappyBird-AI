@@ -1,7 +1,3 @@
-if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-    alert('srfhtedrjyfmh');
-}
-
 var cvs = document.querySelector('#canvas');
 var ctx = cvs.getContext('2d');
 
@@ -28,7 +24,7 @@ wing.src = './resources/audio/sfx_wing.wav';
 var gap = 150;
 var xPos = 10;
 var yPos = 150;
-var grav = 2.6;
+var grav = 0.5;
 var jumpFrames = 6;
 var jumpFrameSize = 10;
 var border = 100;
@@ -85,7 +81,7 @@ function update() {
         ctx.fillStyle = '#000000';
         ctx.font = '24px Verdana';
         ctx.fillText(`Your score : ${score}`, 70, 260);
-        document.onkeydown = () => location.reload();
+        document.onkeydown = cvs.ontouchstart = () => location.reload();
         return;
     }
 
@@ -97,7 +93,7 @@ pipeBottom.onload = () => {
     update();
 };
 
-document.onkeydown = () => {
+document.onkeydown = cvs.ontouchstart = () => {
     wing.play();
     flap(0);
 };

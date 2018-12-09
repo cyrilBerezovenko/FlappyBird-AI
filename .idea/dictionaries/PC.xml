@@ -3,6 +3,7 @@
     <words>
       <w>flappy</w>
       <w>onload</w>
+      <w>ontouchstart</w>
     </words>
   </dictionary>
 </component>
