@@ -1,3 +1,7 @@
+if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+    alert('srfhtedrjyfmh');
+}
+
 var cvs = document.querySelector('#canvas');
 var ctx = cvs.getContext('2d');
 
