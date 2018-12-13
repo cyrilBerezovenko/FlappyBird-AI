@@ -2,8 +2,11 @@
   <dictionary name="PC">
     <words>
       <w>flappy</w>
+      <w>genr</w>
       <w>onload</w>
       <w>ontouchstart</w>
+      <w>vert</w>
+      <w>ypos</w>
     </words>
   </dictionary>
 </component>
