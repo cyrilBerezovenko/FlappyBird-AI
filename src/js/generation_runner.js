@@ -1,3 +1,8 @@
+/*
+cHor: 0.0002100101735564852
+cVert: 0.8266311296177093
+ */
+
 class Generation {
 
     constructor(instanceCount, bg, fg, acceleration, init_ypos) {
@@ -41,8 +46,10 @@ class Generation {
     }
 
     static mutate(b) {
-        b.cVert *= 0.8 + Math.random()*(1.2-0.8);
-        b.cHor *= 0.8 + Math.random()*(1.2-0.8);
+        let min = 0.9;
+        let max = 1.1;
+        b.cVert *= min + Math.random()*(max-min);
+        b.cHor *= min + Math.random()*(max-min);
     }
 
     static crossover(b1, b2) {
@@ -86,12 +93,11 @@ class Bird {
         this.scale_vert = x => x / (vert_max - vert_min);
         this.scale_hor = x => x / (hor_max - hor_min);
 
+        let sigmoid = x => 1 / (1 + Math.exp(-x));
         this.chooseToJump = function() {
-            console.log(this.cVert * this.scale_vert(this.vert)
-                + this.cHor * this.scale_hor(this.hor));
-            return this.cVert*this.scale_vert(this.vert)
-                + this.cHor*this.scale_hor(this.hor);
-        }
+            return sigmoid(this.cVert*this.scale_vert(this.vert)
+                + this.cHor*this.scale_hor(this.hor));
+        };
     }
 }
 
@@ -115,19 +121,19 @@ pipeUp.src = './resources/images/flappy_bird_pipeUp.png';
 pipeBottom.src = './resources/images/flappy_bird_pipeBottom.png';
 
 let gap = 120;
-let acceleration = 0.1;
+let acceleration = 0.2;
 let jumpFrames = 6;
 let jumpFrameSize = 10;
 let border = 100;
 let gameSpeed = 1.5;
 let birdXPosition = 10;
-let decision_threshold = 0.3;
+let decision_threshold = 0.5;
 
 let pipes = [];
 let nextPipeInd = -1;
 let genCounter = 1;
 
-let genr = new Generation(20, bg, fg, acceleration, 150);
+let genr = new Generation(60, bg, fg, acceleration, 150);
 
 function start() {
     pipes.push(new Pipe(cvs.width,
