@@ -98,40 +98,56 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Bird; });
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Bird = function Bird(init_ypos, vert_min, vert_max, hor_min, hor_max) {
-  _classCallCheck(this, Bird);
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-  this.cVert = Math.random();
-  this.cHor = Math.random();
-  this.isAlive = true;
-  this.yPos = init_ypos;
-  this.speed = 0;
-  this.score = 0;
-  this.vert = undefined;
-  this.hor = undefined;
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-  var clone = function clone(obj) {
-    return {
-      obj: obj
-    }.obj;
-  };
+var Bird =
+/*#__PURE__*/
+function () {
+  function Bird(init_ypos, vert_min, vert_max, hor_min, hor_max) {
+    _classCallCheck(this, Bird);
 
-  this.scale_vert = function (x) {
-    return x / (vert_max - vert_min);
-  };
+    this._cVert = Math.random();
+    this._cHor = Math.random();
+    this.isAlive = true;
+    this.yPos = init_ypos;
+    this.speed = 0;
+    this.score = 0;
+    this.vert = undefined;
+    this.hor = undefined;
 
-  this.scale_hor = function (x) {
-    return x / (hor_max - hor_min);
-  };
+    this.scale_vert = function (x) {
+      return x / (vert_max - vert_min);
+    };
 
-  var sigmoid = function sigmoid(x) {
-    return 1 / (1 + Math.exp(-x));
-  };
+    this.scale_hor = function (x) {
+      return x / (hor_max - hor_min);
+    };
 
-  this.chooseToJump = function () {
-    return sigmoid(this.cVert * this.scale_vert(this.vert) + this.cHor * this.scale_hor(this.hor));
-  };
-};
+    var sigmoid = function sigmoid(x) {
+      return 1 / (1 + Math.exp(-x));
+    };
+
+    this.chooseToJump = function () {
+      return sigmoid(this.cVert * this.scale_vert(this.vert) + this.cHor * this.scale_hor(this.hor));
+    };
+  }
+
+  _createClass(Bird, [{
+    key: "_cVert",
+    set: function set(value) {
+      if (value > 1) this.cVert = 1;else if (value < 0) this.cVert = 0;else this.cVert = value;
+    }
+  }, {
+    key: "_cHor",
+    set: function set(value) {
+      if (value > 1) this.cHor = 1;else if (value < 0) this.cHor = 0;else this.cHor = value;
+    }
+  }]);
+
+  return Bird;
+}();
 
 
 
@@ -178,11 +194,12 @@ function () {
 
   _createClass(Generation, [{
     key: "next",
-    value: function next() {
+    value: function next(cMutate) {
       var _this = this;
 
+      // debugger;
       this.birds.sort(function (b1, b2) {
-        return b1.score > b2.score ? 1 : b1.score < b2.score ? -1 : 0;
+        return b1.score > b2.score ? -1 : b1.score < b2.score ? 1 : 0;
       });
       this.birds = this.birds.slice(0, 4);
       var _iteratorNormalCompletion = true;
@@ -235,16 +252,18 @@ function () {
 
       tmp.push(this.birds[r1]);
       tmp.push(this.birds[r2]);
-      tmp.forEach(Generation.mutate);
+      tmp.forEach(function (el) {
+        return Generation.mutate(el, cMutate);
+      });
       tmp.forEach(function (el) {
         return _this.birds.push(el);
-      });
+      }); // debugger;
     }
   }], [{
     key: "mutate",
-    value: function mutate(b) {
-      var min = 0.9;
-      var max = 1.1;
+    value: function mutate(b, cMutate) {
+      var min = 1 - cMutate;
+      var max = 1 + cMutate;
       b.cVert *= min + Math.random() * (max - min);
       b.cHor *= min + Math.random() * (max - min);
     }
@@ -252,7 +271,7 @@ function () {
     key: "crossover",
     value: function crossover(b1, b2) {
       var rand = Object(_generation_runner__WEBPACK_IMPORTED_MODULE_1__["randomInt"])(0, 3);
-      var b3 = Object.assign({}, b1);
+      var b3 = Object.assign(Object.create(Object.getPrototypeOf(b1)), b1);
 
       switch (rand) {
         case 0:
@@ -298,10 +317,6 @@ function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "randomInt", function() { return randomInt; });
 /* harmony import */ var _Generation__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Generation */ "./src/js/Generation.js");
-/*
-cHor: 0.0002100101735564852
-cVert: 0.8266311296177093
- */
 
 var cvs = document.querySelector('#canvas');
 var ctx = cvs.getContext('2d');
@@ -315,29 +330,42 @@ fg.src = './resources/images/flappy_bird_fg.png';
 birdImage.src = './resources/images/flappy_bird_bird.png';
 pipeUp.src = './resources/images/flappy_bird_pipeUp.png';
 pipeBottom.src = './resources/images/flappy_bird_pipeBottom.png';
-var gap = 120;
-var acceleration = 0.2;
+var gap = 100;
+var acceleration = 0.6;
 var jumpFrames = 6;
-var jumpFrameSize = 10;
-var border = 100;
-var gameSpeed = 1.5;
+var jumpFrameSize = 8;
+var border = 120;
+var gameSpeed = 2.5;
 var birdXPosition = 10;
 var decision_threshold = 0.5;
 var pipes = [];
 var nextPipeInd = -1;
 var genCounter = 1;
+var score = 0;
+var generationBestScore = 0;
+var bestScore = 0;
 var genr;
+var generationInfo = document.querySelector('#info-generation span');
+var scoreInfo = document.querySelector('#info-score span');
+var bestScoreInfo = document.querySelector('#info-best-score span');
+
+function init() {
+  genr = new _Generation__WEBPACK_IMPORTED_MODULE_0__["default"](10, bg, fg, acceleration, 150);
+  start();
+}
 
 function start() {
-  genr = new _Generation__WEBPACK_IMPORTED_MODULE_0__["default"](60, bg, fg, acceleration, 150);
   pipes.push(new Pipe(cvs.width, randomInt(-pipeUp.height, cvs.height - fg.height - gap - pipeUp.height)));
   nextPipeInd = 0;
+  score = 0;
 }
 
 function restart() {
   pipes = [];
   start();
-  genr.next();
+  var cMutate = generationBestScore > bestScore ? 0.05 : 1;
+  genr.next(cMutate);
+  generationBestScore = 0;
   genCounter++;
   update();
 }
@@ -347,7 +375,6 @@ function update() {
   var birds = genr.birds.filter(function (b) {
     return b.isAlive;
   });
-  console.log(birds);
 
   if (birds.length === 0) {
     restart();
@@ -397,6 +424,7 @@ function update() {
   if (birdXPosition >= pipes[nextPipeInd].x + pipeUp.width && !pipes[nextPipeInd].passed) {
     pipes[nextPipeInd].passed = true;
     nextPipeInd++;
+    score++;
   }
 
   ctx.drawImage(fg, 0, cvs.height - fg.height);
@@ -436,6 +464,7 @@ function update() {
 
       if (birdXPosition + birdImage.width >= pipes[nextPipeInd].x && birdXPosition <= pipes[nextPipeInd].x + pipeUp.width && (_bird2.yPos <= pipes[nextPipeInd].y + pipeUp.height || _bird2.yPos + birdImage.height >= pipes[nextPipeInd].y + pipeUp.height + gap) || _bird2.yPos >= cvs.height - fg.height - birdImage.height) {
         _bird2.isAlive = false;
+        _bird2.score -= pipes[nextPipeInd].x - birdXPosition;
         continue;
       }
 
@@ -461,14 +490,16 @@ function update() {
     }
   }
 
-  ctx.fillStyle = '#000';
-  ctx.font = '20px Verdana';
-  ctx.fillText("Generation ".concat(genCounter), 10, 490);
+  generationInfo.innerText = genCounter;
+  generationBestScore = Math.max(generationBestScore, score);
+  bestScore = Math.max(bestScore, score);
+  scoreInfo.innerText = score;
+  bestScoreInfo.innerText = bestScore;
   requestAnimationFrame(update);
 }
 
 pipeBottom.onload = function () {
-  start();
+  init();
   update();
 };
 

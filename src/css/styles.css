@@ -4,5 +4,16 @@
 }
 
 #canvas {
-    margin-left: 36%;
+    position: absolute;
+    left: 36%;
+    top: 5%;
+    border: 4px dimgray ridge;
+}
+
+#info {
+    position: absolute;
+    top: 30%;
+    right: 20%;
+    font-family: "Comic Sans MS", sans-serif;
+    font-size: 30px;
 }

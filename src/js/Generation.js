@@ -15,8 +15,9 @@ export default class Generation {
             this.birds.push(new Bird(init_ypos, vert_min, vert_max, hor_min, hor_max));
     }
 
-    next() {
-        this.birds.sort((b1, b2) => b1.score > b2.score ? 1 : (b1.score < b2.score ? -1 : 0));
+    next(cMutate) {
+        // debugger;
+        this.birds.sort((b1, b2) => b1.score > b2.score ? -1 : (b1.score < b2.score ? 1 : 0));
         this.birds = this.birds.slice(0, 4);
         for(let bird of this.birds) {
             bird.isAlive = true;
@@ -39,20 +40,21 @@ export default class Generation {
         tmp.push(this.birds[r1]);
         tmp.push(this.birds[r2]);
 
-        tmp.forEach(Generation.mutate);
+        tmp.forEach(el => Generation.mutate(el, cMutate));
         tmp.forEach(el => this.birds.push(el));
+        // debugger;
     }
 
-    static mutate(b) {
-        let min = 0.9;
-        let max = 1.1;
+    static mutate(b, cMutate) {
+        let min = 1 - cMutate;
+        let max = 1 + cMutate;
         b.cVert *= min + Math.random()*(max-min);
         b.cHor *= min + Math.random()*(max-min);
     }
 
     static crossover(b1, b2) {
         let rand = randomInt(0, 3);
-        let b3 = Object.assign({}, b1);
+        let b3 = Object.assign(Object.create(Object.getPrototypeOf(b1)), b1);
         switch(rand) {
             case 0:
                 b3.cVert = b1.cVert;

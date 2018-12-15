@@ -1,8 +1,3 @@
-/*
-cHor: 0.0002100101735564852
-cVert: 0.8266311296177093
- */
-
 import Generation from './Generation';
 
 let cvs = document.querySelector('#canvas');
@@ -20,32 +15,45 @@ birdImage.src = './resources/images/flappy_bird_bird.png';
 pipeUp.src = './resources/images/flappy_bird_pipeUp.png';
 pipeBottom.src = './resources/images/flappy_bird_pipeBottom.png';
 
-let gap = 120;
-let acceleration = 0.2;
+let gap = 100;
+let acceleration = 0.6;
 let jumpFrames = 6;
-let jumpFrameSize = 10;
-let border = 100;
-let gameSpeed = 1.5;
+let jumpFrameSize = 8;
+let border = 120;
+let gameSpeed = 2.5;
 let birdXPosition = 10;
 let decision_threshold = 0.5;
 
 let pipes = [];
 let nextPipeInd = -1;
 let genCounter = 1;
+let score = 0;
+let generationBestScore = 0;
+let bestScore = 0;
 
 let genr;
+let generationInfo = document.querySelector('#info-generation span');
+let scoreInfo = document.querySelector('#info-score span');
+let bestScoreInfo = document.querySelector('#info-best-score span');
+
+function init() {
+    genr = new Generation(10, bg, fg, acceleration, 150);
+    start();
+}
 
 function start() {
-    genr = new Generation(60, bg, fg, acceleration, 150);
     pipes.push(new Pipe(cvs.width,
         randomInt(-pipeUp.height, cvs.height - fg.height - gap - pipeUp.height)));
     nextPipeInd = 0;
+    score = 0;
 }
 
 function restart() {
     pipes = [];
     start();
-    genr.next();
+    let cMutate = generationBestScore > bestScore ? 0.05 : 1;
+    genr.next(cMutate);
+    generationBestScore = 0;
     genCounter++;
     update();
 }
@@ -54,7 +62,6 @@ function update() {
     ctx.drawImage(bg, 0, 0);
 
     let birds = genr.birds.filter(b => b.isAlive);
-    console.log(birds);
     if(birds.length === 0) {
         restart();
         return;
@@ -83,6 +90,7 @@ function update() {
     if(birdXPosition >= pipes[nextPipeInd].x + pipeUp.width && !pipes[nextPipeInd].passed) {
         pipes[nextPipeInd].passed = true;
         nextPipeInd++;
+        score++;
     }
 
     ctx.drawImage(fg, 0, cvs.height - fg.height);
@@ -98,6 +106,7 @@ function update() {
             && (bird.yPos <= pipes[nextPipeInd].y + pipeUp.height || bird.yPos + birdImage.height >= pipes[nextPipeInd].y + pipeUp.height + gap)
             || (bird.yPos >= cvs.height - fg.height - birdImage.height)) {
             bird.isAlive = false;
+            bird.score -= pipes[nextPipeInd].x - birdXPosition;
             continue;
         }
         bird.vert = bird.yPos - (pipes[nextPipeInd].y + pipeUp.height + gap/2);
@@ -107,15 +116,17 @@ function update() {
         }
     }
 
-    ctx.fillStyle = '#000';
-    ctx.font = '20px Verdana';
-    ctx.fillText(`Generation ${genCounter}`, 10, 490);
+    generationInfo.innerText = genCounter;
+    generationBestScore = Math.max(generationBestScore, score);
+    bestScore = Math.max(bestScore, score);
+    scoreInfo.innerText = score;
+    bestScoreInfo.innerText = bestScore;
 
     requestAnimationFrame(update);
 }
 
 pipeBottom.onload = () => {
-    start();
+    init();
     update();
 };
 
