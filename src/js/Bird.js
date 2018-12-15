@@ -10,6 +10,7 @@ export default class Bird {
         this.vert = undefined;
         this.hor = undefined;
 
+        let clone = obj => {return {obj:obj}.obj};
         this.scale_vert = x => x / (vert_max - vert_min);
         this.scale_hor = x => x / (hor_max - hor_min);
 

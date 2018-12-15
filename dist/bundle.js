@@ -110,6 +110,12 @@ var Bird = function Bird(init_ypos, vert_min, vert_max, hor_min, hor_max) {
   this.vert = undefined;
   this.hor = undefined;
 
+  var clone = function clone(obj) {
+    return {
+      obj: obj
+    }.obj;
+  };
+
   this.scale_vert = function (x) {
     return x / (vert_max - vert_min);
   };
@@ -320,9 +326,10 @@ var decision_threshold = 0.5;
 var pipes = [];
 var nextPipeInd = -1;
 var genCounter = 1;
-var genr = new _Generation__WEBPACK_IMPORTED_MODULE_0__["default"](60, bg, fg, acceleration, 150);
+var genr;
 
 function start() {
+  genr = new _Generation__WEBPACK_IMPORTED_MODULE_0__["default"](60, bg, fg, acceleration, 150);
   pipes.push(new Pipe(cvs.width, randomInt(-pipeUp.height, cvs.height - fg.height - gap - pipeUp.height)));
   nextPipeInd = 0;
 }
@@ -340,6 +347,7 @@ function update() {
   var birds = genr.birds.filter(function (b) {
     return b.isAlive;
   });
+  console.log(birds);
 
   if (birds.length === 0) {
     restart();

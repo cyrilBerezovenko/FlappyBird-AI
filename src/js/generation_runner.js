@@ -33,9 +33,10 @@ let pipes = [];
 let nextPipeInd = -1;
 let genCounter = 1;
 
-let genr = new Generation(60, bg, fg, acceleration, 150);
+let genr;
 
 function start() {
+    genr = new Generation(60, bg, fg, acceleration, 150);
     pipes.push(new Pipe(cvs.width,
         randomInt(-pipeUp.height, cvs.height - fg.height - gap - pipeUp.height)));
     nextPipeInd = 0;
@@ -53,6 +54,7 @@ function update() {
     ctx.drawImage(bg, 0, 0);
 
     let birds = genr.birds.filter(b => b.isAlive);
+    console.log(birds);
     if(birds.length === 0) {
         restart();
         return;
