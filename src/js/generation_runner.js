@@ -114,7 +114,6 @@ function update() {
         }
         bird.vert = bird.yPos - (pipes[nextPipeInd].y + pipeUp.height + gap/2);
         bird.hor = pipes[nextPipeInd].x - birdXPosition;
-        debugger;
         if(bird.chooseToJump() >= decision_threshold && !bird.isJumping) {
             flap(0, bird);
             bird.isJumping = true;

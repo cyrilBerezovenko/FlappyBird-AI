@@ -11,9 +11,7 @@
 }
 
 #info {
-    position: absolute;
-    top: 30%;
-    right: 20%;
+    margin: 100px 0 0 100px;
     font-family: "Comic Sans MS", sans-serif;
     font-size: 30px;
 }
