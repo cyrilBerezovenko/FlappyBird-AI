@@ -1,14 +1,16 @@
 export default class Bird {
 
-    constructor(init_ypos, vert_min, vert_max, hor_min, hor_max) {
-        this._cVert = Math.random();
-        this._cHor = Math.random();
+    constructor(init_ypos, vert_min, vert_max, hor_min, hor_max, cMax) {
+        this._cVert = Math.random() * cMax;
+        this._cHor = Math.random() * cMax;
         this.isAlive = true;
         this.yPos = init_ypos;
         this.speed = 0;
         this.score = 0;
         this.vert = undefined;
         this.hor = undefined;
+        this.isJumping = false;
+        this.cMax = cMax;
 
         this.scale_vert = x => x / (vert_max - vert_min);
         this.scale_hor = x => x / (hor_max - hor_min);
@@ -20,20 +22,28 @@ export default class Bird {
         };
     }
 
+    get _cVert() {
+        return this.cVert;
+    }
+
+    get _cHor() {
+        return this.cHor;
+    }
+
     set _cVert(value) {
-        if(value > 1)
-            this.cVert = 1;
-        else if(value < 0)
-            this.cVert = 0;
+        if(value > this.cMax)
+            this.cVert = this.cMax;
+        else if(value < -this.cMax)
+            this.cVert = -this.cMax;
         else
             this.cVert = value;
     }
 
     set _cHor(value) {
-        if(value > 1)
-            this.cHor = 1;
-        else if(value < 0)
-            this.cHor = 0;
+        if(value > this.cMax)
+            this.cHor = this.cMax;
+        else if(value < -this.cMax)
+            this.cHor = -this.cMax;
         else
             this.cHor = value;
     }

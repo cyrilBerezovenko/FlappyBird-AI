@@ -16,11 +16,13 @@ pipeUp.src = './resources/images/flappy_bird_pipeUp.png';
 pipeBottom.src = './resources/images/flappy_bird_pipeBottom.png';
 
 let gap = 100;
-let acceleration = 0.6;
-let jumpFrames = 6;
-let jumpFrameSize = 8;
-let border = 120;
+let acceleration = 0.36;
+let jumpFrames = 12;
+let jumpFrameSize = 3;
+let border = 100;
 let gameSpeed = 2.5;
+let jumpTimeout = 50;
+let cMax = 4;
 let birdXPosition = 10;
 let decision_threshold = 0.5;
 
@@ -35,9 +37,10 @@ let genr;
 let generationInfo = document.querySelector('#info-generation span');
 let scoreInfo = document.querySelector('#info-score span');
 let bestScoreInfo = document.querySelector('#info-best-score span');
+let aliveInfo = document.querySelector('#info-alive span');
 
 function init() {
-    genr = new Generation(10, bg, fg, acceleration, 150);
+    genr = new Generation(10, bg, fg, acceleration, 150, cMax);
     start();
 }
 
@@ -51,7 +54,7 @@ function start() {
 function restart() {
     pipes = [];
     start();
-    let cMutate = generationBestScore > bestScore ? 0.05 : 1;
+    let cMutate = generationBestScore >= bestScore ? 0.05 : 0.3;
     genr.next(cMutate);
     generationBestScore = 0;
     genCounter++;
@@ -111,12 +114,16 @@ function update() {
         }
         bird.vert = bird.yPos - (pipes[nextPipeInd].y + pipeUp.height + gap/2);
         bird.hor = pipes[nextPipeInd].x - birdXPosition;
-        if(bird.chooseToJump() >= decision_threshold) {
+        debugger;
+        if(bird.chooseToJump() >= decision_threshold && !bird.isJumping) {
             flap(0, bird);
+            bird.isJumping = true;
+            setTimeout(() => bird.isJumping = false, jumpTimeout);
         }
     }
 
     generationInfo.innerText = genCounter;
+    aliveInfo.innerText = birds.length;
     generationBestScore = Math.max(generationBestScore, score);
     bestScore = Math.max(bestScore, score);
     scoreInfo.innerText = score;
@@ -132,7 +139,10 @@ pipeBottom.onload = () => {
 
 
 function flap(frame, bird) {
-    if(frame === jumpFrames) return;
+    if(frame === jumpFrames) {
+        // setTimeout(() => bird.isJumping = false, jumpTimeout);
+        return;
+    }
     bird.yPos -= jumpFrameSize;
     bird.speed = 0;
     requestAnimationFrame(() => flap(frame+1, bird));

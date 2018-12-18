@@ -105,17 +105,19 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 var Bird =
 /*#__PURE__*/
 function () {
-  function Bird(init_ypos, vert_min, vert_max, hor_min, hor_max) {
+  function Bird(init_ypos, vert_min, vert_max, hor_min, hor_max, cMax) {
     _classCallCheck(this, Bird);
 
-    this._cVert = Math.random();
-    this._cHor = Math.random();
+    this._cVert = Math.random() * cMax;
+    this._cHor = Math.random() * cMax;
     this.isAlive = true;
     this.yPos = init_ypos;
     this.speed = 0;
     this.score = 0;
     this.vert = undefined;
     this.hor = undefined;
+    this.isJumping = false;
+    this.cMax = cMax;
 
     this.scale_vert = function (x) {
       return x / (vert_max - vert_min);
@@ -136,13 +138,19 @@ function () {
 
   _createClass(Bird, [{
     key: "_cVert",
+    get: function get() {
+      return this.cVert;
+    },
     set: function set(value) {
-      if (value > 1) this.cVert = 1;else if (value < 0) this.cVert = 0;else this.cVert = value;
+      if (value > this.cMax) this.cVert = this.cMax;else if (value < -this.cMax) this.cVert = -this.cMax;else this.cVert = value;
     }
   }, {
     key: "_cHor",
+    get: function get() {
+      return this.cHor;
+    },
     set: function set(value) {
-      if (value > 1) this.cHor = 1;else if (value < 0) this.cHor = 0;else this.cHor = value;
+      if (value > this.cMax) this.cHor = this.cMax;else if (value < -this.cMax) this.cHor = -this.cMax;else this.cHor = value;
     }
   }]);
 
@@ -177,7 +185,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 var Generation =
 /*#__PURE__*/
 function () {
-  function Generation(instanceCount, bg, fg, acceleration, init_ypos) {
+  function Generation(instanceCount, bg, fg, acceleration, init_ypos, cMax) {
     _classCallCheck(this, Generation);
 
     var vert_min = 0;
@@ -188,7 +196,7 @@ function () {
     this.birds = [];
 
     for (var i = 0; i < instanceCount; i++) {
-      this.birds.push(new _Bird__WEBPACK_IMPORTED_MODULE_0__["default"](init_ypos, vert_min, vert_max, hor_min, hor_max));
+      this.birds.push(new _Bird__WEBPACK_IMPORTED_MODULE_0__["default"](init_ypos, vert_min, vert_max, hor_min, hor_max, cMax));
     }
   }
 
@@ -214,6 +222,7 @@ function () {
           bird.yPos = this.init_ypos;
           bird.hor = bird.vert = undefined;
           bird.score = 0;
+          bird.isJumping = false;
         }
       } catch (err) {
         _didIteratorError = true;
@@ -262,10 +271,10 @@ function () {
   }], [{
     key: "mutate",
     value: function mutate(b, cMutate) {
-      var min = 1 - cMutate;
-      var max = 1 + cMutate;
-      b.cVert *= min + Math.random() * (max - min);
-      b.cHor *= min + Math.random() * (max - min);
+      var min = -b.cMax - cMutate;
+      var max = b.cMax + cMutate;
+      b._cVert *= min + Math.random() * (max - min);
+      b._cHor *= min + Math.random() * (max - min);
     }
   }, {
     key: "crossover",
@@ -275,23 +284,23 @@ function () {
 
       switch (rand) {
         case 0:
-          b3.cVert = b1.cVert;
-          b3.cHor = b1.cHor;
+          b3._cVert = b1._cVert;
+          b3._cHor = b1._cHor;
           break;
 
         case 1:
-          b3.cVert = b1.cVert;
-          b3.cHor = b2.cHor;
+          b3._cVert = b1._cVert;
+          b3._cHor = b2._cHor;
           break;
 
         case 2:
-          b3.cVert = b2.cVert;
-          b3.cHor = b1.cHor;
+          b3._cVert = b2._cVert;
+          b3._cHor = b1._cHor;
           break;
 
         case 3:
-          b3.cVert = b2.cVert;
-          b3.cHor = b2.cHor;
+          b3._cVert = b2._cVert;
+          b3._cHor = b2._cHor;
           break;
       }
 
@@ -331,11 +340,13 @@ birdImage.src = './resources/images/flappy_bird_bird.png';
 pipeUp.src = './resources/images/flappy_bird_pipeUp.png';
 pipeBottom.src = './resources/images/flappy_bird_pipeBottom.png';
 var gap = 100;
-var acceleration = 0.6;
-var jumpFrames = 6;
-var jumpFrameSize = 8;
-var border = 120;
+var acceleration = 0.36;
+var jumpFrames = 12;
+var jumpFrameSize = 3;
+var border = 100;
 var gameSpeed = 2.5;
+var jumpTimeout = 50;
+var cMax = 4;
 var birdXPosition = 10;
 var decision_threshold = 0.5;
 var pipes = [];
@@ -348,9 +359,10 @@ var genr;
 var generationInfo = document.querySelector('#info-generation span');
 var scoreInfo = document.querySelector('#info-score span');
 var bestScoreInfo = document.querySelector('#info-best-score span');
+var aliveInfo = document.querySelector('#info-alive span');
 
 function init() {
-  genr = new _Generation__WEBPACK_IMPORTED_MODULE_0__["default"](10, bg, fg, acceleration, 150);
+  genr = new _Generation__WEBPACK_IMPORTED_MODULE_0__["default"](10, bg, fg, acceleration, 150, cMax);
   start();
 }
 
@@ -363,7 +375,7 @@ function start() {
 function restart() {
   pipes = [];
   start();
-  var cMutate = generationBestScore > bestScore ? 0.05 : 1;
+  var cMutate = generationBestScore >= bestScore ? 0.05 : 0.3;
   genr.next(cMutate);
   generationBestScore = 0;
   genCounter++;
@@ -459,21 +471,32 @@ function update() {
   var _iteratorError3 = undefined;
 
   try {
+    var _loop = function _loop() {
+      var bird = _step3.value;
+
+      if (birdXPosition + birdImage.width >= pipes[nextPipeInd].x && birdXPosition <= pipes[nextPipeInd].x + pipeUp.width && (bird.yPos <= pipes[nextPipeInd].y + pipeUp.height || bird.yPos + birdImage.height >= pipes[nextPipeInd].y + pipeUp.height + gap) || bird.yPos >= cvs.height - fg.height - birdImage.height) {
+        bird.isAlive = false;
+        bird.score -= pipes[nextPipeInd].x - birdXPosition;
+        return "continue";
+      }
+
+      bird.vert = bird.yPos - (pipes[nextPipeInd].y + pipeUp.height + gap / 2);
+      bird.hor = pipes[nextPipeInd].x - birdXPosition;
+      debugger;
+
+      if (bird.chooseToJump() >= decision_threshold && !bird.isJumping) {
+        flap(0, bird);
+        bird.isJumping = true;
+        setTimeout(function () {
+          return bird.isJumping = false;
+        }, jumpTimeout);
+      }
+    };
+
     for (var _iterator3 = birds[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-      var _bird2 = _step3.value;
+      var _ret = _loop();
 
-      if (birdXPosition + birdImage.width >= pipes[nextPipeInd].x && birdXPosition <= pipes[nextPipeInd].x + pipeUp.width && (_bird2.yPos <= pipes[nextPipeInd].y + pipeUp.height || _bird2.yPos + birdImage.height >= pipes[nextPipeInd].y + pipeUp.height + gap) || _bird2.yPos >= cvs.height - fg.height - birdImage.height) {
-        _bird2.isAlive = false;
-        _bird2.score -= pipes[nextPipeInd].x - birdXPosition;
-        continue;
-      }
-
-      _bird2.vert = _bird2.yPos - (pipes[nextPipeInd].y + pipeUp.height + gap / 2);
-      _bird2.hor = pipes[nextPipeInd].x - birdXPosition;
-
-      if (_bird2.chooseToJump() >= decision_threshold) {
-        flap(0, _bird2);
-      }
+      if (_ret === "continue") continue;
     }
   } catch (err) {
     _didIteratorError3 = true;
@@ -491,6 +514,7 @@ function update() {
   }
 
   generationInfo.innerText = genCounter;
+  aliveInfo.innerText = birds.length;
   generationBestScore = Math.max(generationBestScore, score);
   bestScore = Math.max(bestScore, score);
   scoreInfo.innerText = score;
@@ -504,7 +528,11 @@ pipeBottom.onload = function () {
 };
 
 function flap(frame, bird) {
-  if (frame === jumpFrames) return;
+  if (frame === jumpFrames) {
+    // setTimeout(() => bird.isJumping = false, jumpTimeout);
+    return;
+  }
+
   bird.yPos -= jumpFrameSize;
   bird.speed = 0;
   requestAnimationFrame(function () {

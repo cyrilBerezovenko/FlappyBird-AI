@@ -3,7 +3,7 @@ import {randomInt} from './generation_runner';
 
 export default class Generation {
 
-    constructor(instanceCount, bg, fg, acceleration, init_ypos) {
+    constructor(instanceCount, bg, fg, acceleration, init_ypos, cMax) {
         let vert_min = 0;
         let vert_max = bg.height - fg.height;
         let hor_min = 0;
@@ -12,7 +12,7 @@ export default class Generation {
 
         this.birds = [];
         for(let i = 0; i < instanceCount; i++)
-            this.birds.push(new Bird(init_ypos, vert_min, vert_max, hor_min, hor_max));
+            this.birds.push(new Bird(init_ypos, vert_min, vert_max, hor_min, hor_max, cMax));
     }
 
     next(cMutate) {
@@ -25,6 +25,7 @@ export default class Generation {
             bird.yPos = this.init_ypos;
             bird.hor = bird.vert = undefined;
             bird.score = 0;
+            bird.isJumping = false;
         }
 
         let tmp = [];
@@ -46,10 +47,10 @@ export default class Generation {
     }
 
     static mutate(b, cMutate) {
-        let min = 1 - cMutate;
-        let max = 1 + cMutate;
-        b.cVert *= min + Math.random()*(max-min);
-        b.cHor *= min + Math.random()*(max-min);
+        let min = -b.cMax - cMutate;
+        let max = b.cMax + cMutate;
+        b._cVert *= min + Math.random()*(max-min);
+        b._cHor *= min + Math.random()*(max-min);
     }
 
     static crossover(b1, b2) {
@@ -57,20 +58,20 @@ export default class Generation {
         let b3 = Object.assign(Object.create(Object.getPrototypeOf(b1)), b1);
         switch(rand) {
             case 0:
-                b3.cVert = b1.cVert;
-                b3.cHor = b1.cHor;
+                b3._cVert = b1._cVert;
+                b3._cHor = b1._cHor;
                 break;
             case 1:
-                b3.cVert = b1.cVert;
-                b3.cHor = b2.cHor;
+                b3._cVert = b1._cVert;
+                b3._cHor = b2._cHor;
                 break;
             case 2:
-                b3.cVert = b2.cVert;
-                b3.cHor = b1.cHor;
+                b3._cVert = b2._cVert;
+                b3._cHor = b1._cHor;
                 break;
             case 3:
-                b3.cVert = b2.cVert;
-                b3.cHor = b2.cHor;
+                b3._cVert = b2._cVert;
+                b3._cHor = b2._cHor;
                 break;
         }
         return b3;
